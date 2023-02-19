@@ -5,6 +5,8 @@ from preprocessing import return_relevant_chunks
 app = FastAPI()
 
 origins = [
+    "https://www.semanticnear.xyz/",
+    "https://www.semanticnear.xyz/*",
     "http://localhost:3000",
     "http://localhost:*",
 ]
