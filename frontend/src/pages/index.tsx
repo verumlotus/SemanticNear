@@ -1,56 +1,56 @@
 import Head from "next/head";
-import { Inter } from "@next/font/google";
 import { Contract, connect } from "near-api-js";
 import styles from "@/styles/Home.module.css";
 import { useState } from "react";
 import RelevantText from "@/components/RelevantText";
 import Loading from "@/components/Loading";
+import axios from 'axios';
 
-const inter = Inter({ subsets: ["latin"] });
 const NODE_URL = "https://archival-rpc.mainnet.near.org";
+const NEAR_API = "https://api.near.social/get"
+const PAGODA_API = "https://near-mainnet.api.pagoda.co/eapi/v1"
 const CALLING_ACCOUNT_ID = "shivamcal.near";
+const BACKEND_ENDPOINT = "https://api.semanticnear.xyz/relevant-chunks"
 
 export default function Home() {
   const [accountId, setAccountId] = useState("");
   const [query, setQuery] = useState("");
   const [relevantText, setRelevantText] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("")
 
-  async function fetchPosts(accountId: string): Promise<string> {
-    console.log("HERE");
-    const nearConnection = await connect({
-      networkId: "mainnet",
-      nodeUrl: NODE_URL,
-    });
-
-    const account = await nearConnection.account(CALLING_ACCOUNT_ID);
-
-    const socialDBConnection = new Contract(account, "social.near", {
-      viewMethods: ["get", "keys"],
-      changeMethods: [],
-    });
-
-    // @ts-ignore
-    const response = await socialDBConnection.get({
-      keys: ["littlelion.near/**"],
-      options: {
-        return_deleted: true,
-      },
-    });
-
-    // TODO: get all the posts as text
-    // const postText = TOOD
-
-    return "Some dummy post data";
+  async function fetchPosts(accountId: string): Promise<string[]> {
+    const axiosResponse = await axios.get(`/api/${accountId}`)
+    if (axiosResponse.status != 200) {
+      setErrorMessage("We ran into an issue – apologies!")
+      return [];
+    }
+    // Else, return the posts
+    return axiosResponse.data.posts;
   }
 
   async function findRelevantText() {
+    setErrorMessage("");
     setIsLoading(true);
-    
-    // TODO: Fetch the posts based on the accountID
-    // TODO just call the backend
-    // axiosResponse = some Axios call
-    // TODO: Some error checking
+    const posts = await fetchPosts(accountId);
+    const postsAsSingleString = posts.join("\n\n")
+
+    // Now call our backend
+    const axiosResponse = await axios.post(BACKEND_ENDPOINT, {}, {
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: {
+        text: postsAsSingleString,
+        query: query
+      }
+    })
+    if (axiosResponse.status != 200) {
+      setErrorMessage("We ran into an issue – apologies!")
+      return;
+    }
+    // Else, set the data (data should simply be an array)
+    setRelevantText(axiosResponse.data)
 
     setIsLoading(false);
     setRelevantText(["Some relevant text would be over here", "Some other chunk here"]);
