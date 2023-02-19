@@ -61,8 +61,13 @@ export default async function handler(
     })
     // Convert Byte array of ASCII code into strings
     // @ts-ignore
-    const post = String.fromCharCode.apply(null, nearApiResponse['result']);
-    posts.add(post)
+    const rawPost = String.fromCharCode.apply(null, nearApiResponse['result']);
+    // Get the post data and parse it into JSON
+    //@ts-ignore
+    const postAsJson = JSON.parse(rawPost)
+    const mainPostAsJson = JSON.parse(postAsJson[accountId]['post']['main'])
+    const postText = mainPostAsJson['text']
+    posts.add(postText)
 
     // const nearApiAxiosResponse = await axios.post(NEAR_API, {}, {
     //   headers: {
@@ -76,11 +81,6 @@ export default async function handler(
     // if (nearApiAxiosResponse.status != 200) {
     //   return res.status(nearApiAxiosResponse.status).send({error: nearApiAxiosResponse.statusText, posts: []})
     // }
-
-    // Get the post data and parse it into JSON
-    //@ts-ignore
-    // const postData = JSON.parse(nearApiResponse.data[accountId]['post']['main'])
-    // posts.add(postData)
   }
 
   return res.status(200).json({posts: Array.from(posts.values())})

@@ -50,10 +50,8 @@ export default function Home() {
       return;
     }
     // Else, set the data (data should simply be an array)
-    setRelevantText(axiosResponse.data)
-
     setIsLoading(false);
-    setRelevantText(["Some relevant text would be over here", "Some other chunk here"]);
+    setRelevantText(axiosResponse.data)
   }
 
   return (
