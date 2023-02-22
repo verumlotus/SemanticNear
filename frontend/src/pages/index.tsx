@@ -1,15 +1,10 @@
 import Head from "next/head";
-import { Contract, connect } from "near-api-js";
 import styles from "@/styles/Home.module.css";
 import { useState } from "react";
 import RelevantText from "@/components/RelevantText";
 import Loading from "@/components/Loading";
 import axios from 'axios';
 
-const NODE_URL = "https://archival-rpc.mainnet.near.org";
-const NEAR_API = "https://api.near.social/get"
-const PAGODA_API = "https://near-mainnet.api.pagoda.co/eapi/v1"
-const CALLING_ACCOUNT_ID = "shivamcal.near";
 const BACKEND_ENDPOINT = "https://api.semanticnear.xyz/relevant-chunks"
 
 export default function Home() {
@@ -19,39 +14,56 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("")
 
-  async function fetchPosts(accountId: string): Promise<string[]> {
-    const axiosResponse = await axios.get(`/api/${accountId}`)
-    if (axiosResponse.status != 200) {
-      setErrorMessage("We ran into an issue – apologies!")
-      return [];
+  async function fetchPosts(accountId: string): Promise<string[] | null> {
+    try {
+      const axiosResponse = await axios.get(`/api/${accountId}`)
+      if (axiosResponse.status != 200) {
+        return null;
+      }
+      // Else, return the posts
+      return axiosResponse.data.posts;
+    } catch (err) {
+      return null;
     }
-    // Else, return the posts
-    return axiosResponse.data.posts;
   }
 
   async function findRelevantText() {
     setErrorMessage("");
     setIsLoading(true);
-    const posts = await fetchPosts(accountId);
-    const postsAsSingleString = posts.join("\n\n")
-
-    // Now call our backend
-    const axiosResponse = await axios.post(BACKEND_ENDPOINT, {}, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-      params: {
-        text: postsAsSingleString,
-        query: query
+    try {
+      const posts = await fetchPosts(accountId);
+      console.log(`Posts are ${posts}`)
+      if (posts == null) {
+        setErrorMessage("We ran into an issue – apologies!")
+        return;
       }
-    })
-    if (axiosResponse.status != 200) {
+      if (posts!.length == 0) {
+        setErrorMessage("No posts were found for this user!");
+        return;
+      }
+      const postsAsSingleString = posts!.join("\n\n")
+  
+      // Now call our backend
+      const axiosResponse = await axios.post(BACKEND_ENDPOINT, {}, {
+        headers: {
+          "Content-Type": "application/json"
+        },
+        params: {
+          text: postsAsSingleString,
+          query: query
+        }
+      })
+      if (axiosResponse.status != 200) {
+        setErrorMessage("We ran into an issue – apologies!")
+        return;
+      }
+      // Else, set the data (data should simply be an array)
+      setRelevantText(axiosResponse.data)
+    } catch (err) {
       setErrorMessage("We ran into an issue – apologies!")
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    // Else, set the data (data should simply be an array)
-    setIsLoading(false);
-    setRelevantText(axiosResponse.data)
   }
 
   return (
@@ -91,6 +103,11 @@ export default function Home() {
           }
           {isLoading &&
             <Loading/>
+          }
+          {errorMessage &&
+            <div className="text-red-500 text-center font-sans text-md pb-4">
+              {errorMessage} 
+            </div>
           }
           <div className="py-2"></div>
           <button 
