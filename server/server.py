@@ -14,6 +14,7 @@ image = modal.Image.from_dockerfile("Dockerfile", context_mount=mount)
 app = FastAPI()
 
 origins = [
+    "*",
     "https://www.semanticnear.xyz/",
     "https://www.semanticnear.xyz/*",
     "http://localhost:3000",
