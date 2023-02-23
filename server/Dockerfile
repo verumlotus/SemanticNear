@@ -25,6 +25,6 @@ RUN pip install --upgrade -r /app/requirements.txt
 
 RUN make setup
 
-EXPOSE 80
+# EXPOSE 80
 
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "80"]
+# CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "80"]

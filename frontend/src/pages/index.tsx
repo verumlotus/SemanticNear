@@ -5,7 +5,8 @@ import RelevantText from "@/components/RelevantText";
 import Loading from "@/components/Loading";
 import axios from 'axios';
 
-const BACKEND_ENDPOINT = "https://api.semanticnear.xyz/relevant-chunks"
+// const BACKEND_ENDPOINT = "https://api.semanticnear.xyz/relevant-chunks"
+const BACKEND_ENDPOINT = "https://verumlotus--semantic-near-fastapi-app.modal.run"
 
 export default function Home() {
   const [accountId, setAccountId] = useState("");
@@ -30,9 +31,9 @@ export default function Home() {
   async function findRelevantText() {
     setErrorMessage("");
     setIsLoading(true);
+    setRelevantText([]);
     try {
       const posts = await fetchPosts(accountId);
-      console.log(`Posts are ${posts}`)
       if (posts == null) {
         setErrorMessage("We ran into an issue – apologies!")
         return;
@@ -44,7 +45,7 @@ export default function Home() {
       const postsAsSingleString = posts!.join("\n\n")
   
       // Now call our backend
-      const axiosResponse = await axios.post(BACKEND_ENDPOINT, {}, {
+      const axiosResponse = await axios.post(`${BACKEND_ENDPOINT}/relevant-chunks`, {}, {
         headers: {
           "Content-Type": "application/json"
         },

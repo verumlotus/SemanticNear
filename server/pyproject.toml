@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.9.16"
+python = "~3.9.15"
 langchain = "^0.0.82"
 openai = "^0.26.5"
 nltk = "^3.8.1"
@@ -17,6 +17,7 @@ uvicorn = "^0.20.0"
 mypy = "^1.0.0"
 bs4 = "^0.0.1"
 poetry-dotenv-plugin = "^0.1.0"
+modal-client = "^0.46.1337"
 
 
 [build-system]
